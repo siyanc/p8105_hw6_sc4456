@@ -1,0 +1,60 @@
+---
+title: "hw6"
+author: "Siyan Chen"
+date: "11/20/2018"
+output: github_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(httr)
+require(RCurl)
+```
+
+# Problem1
+
+### import data
+
+```{r}
+homicide_data = read.csv(text = getURL("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv")) %>% 
+  janitor::clean_names()
+```
+
+### data manipulation
+
+```{r}
+homicide_data = 
+  homicide_data %>% 
+  mutate(city_state = str_c(city, "_", state),
+         solved = str_detect(disposition, "[Cc]losed by arrest"),
+         solved = as.numeric(solved))
+
+homicide_data = 
+  homicide_data %>% 
+  filter(city_state != "Dallas_TX"  & city_state !="Phoenix_AZ" & city_state !="Kansas_MO" & city_state !="Tulsa_AL")
+
+homicide_data =
+  homicide_data %>% 
+  mutate(victim_race = ifelse(victim_race == "White", "White", "Non_White"), 
+         victim_age = as.numeric(victim_age))  
+
+```
+
+### Regression Model
+
+```{r}
+Balti_df = homicide_data %>% 
+  filter(city_state == "Baltimore_MD")
+fit_logistic = 
+  Balti_df %>% 
+  glm(solved ~ victim_age + victim_sex + victim_race, data = ., family = binomial(link = "logit"))
+
+fit_logistic %>% 
+  broom::tidy() %>% 
+  mutate(log_OR = estimate,
+         OR = exp(estimate)) %>% 
+  select(term, log_OR, OR, p.value)
+```
+
