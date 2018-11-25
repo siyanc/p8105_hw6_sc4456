@@ -109,7 +109,7 @@ homicide_glm %>%
 
 ### Data Input and Tidy
 
-```{r}
+```{r, results = 'hide'}
 birth_df = read_csv("./data/birthweight.csv") %>% 
   janitor::clean_names() %>% 
   mutate(babysex = as.factor(babysex),
@@ -122,7 +122,7 @@ is.na(birth_df)
 # check for NA and there is no NA
 ```
 
-### Model builting-Backward elimination
+### Model builting
 
 ```{r}
 library("leaps")
