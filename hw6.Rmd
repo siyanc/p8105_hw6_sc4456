@@ -4,13 +4,18 @@ author: "Siyan Chen"
 date: "11/20/2018"
 output: github_document
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(httr)
 require(RCurl)
+library(modelr)
+set.seed(1)
+
+library(leaps)
+
 ```
 
 # Problem1
@@ -25,36 +30,145 @@ homicide_data = read.csv(text = getURL("https://raw.githubusercontent.com/washin
 ### data manipulation
 
 ```{r}
-homicide_data = 
-  homicide_data %>% 
+homicide_data_modify = 
+  homicide_data %>%
   mutate(city_state = str_c(city, "_", state),
          solved = str_detect(disposition, "[Cc]losed by arrest"),
-         solved = as.numeric(solved))
+         solved = as.numeric(solved)) %>% 
+  filter(city_state != "Dallas_TX" & city_state != "Phoenix_AZ" & city_state != "Kansas City_MO" & city_state != "Tulsa_AL") %>% 
+  mutate(victim_race = ifelse(victim_race == "White", "White", "Non_White"),
+         victim_race = as.factor(victim_race),
+         victim_race = fct_relevel(victim_race,"White"),
+         victim_age = as.numeric(victim_age))
 
-homicide_data = 
-  homicide_data %>% 
-  filter(city_state != "Dallas_TX"  & city_state !="Phoenix_AZ" & city_state !="Kansas_MO" & city_state !="Tulsa_AL")
-
-homicide_data =
-  homicide_data %>% 
-  mutate(victim_race = ifelse(victim_race == "White", "White", "Non_White"), 
-         victim_age = as.numeric(victim_age))  
-
+head(homicide_data_modify)
 ```
 
 ### Regression Model
 
 ```{r}
-Balti_df = homicide_data %>% 
-  filter(city_state == "Baltimore_MD")
-fit_logistic = 
-  Balti_df %>% 
-  glm(solved ~ victim_age + victim_sex + victim_race, data = ., family = binomial(link = "logit"))
+Balti_df = homicide_data_modify %>% 
+  filter(city_state == "Baltimore_MD") 
 
-fit_logistic %>% 
+fit_logistic = 
+  Balti_df %>% glm(solved ~victim_age + victim_sex + victim_race, data = ., family = binomial(logit))
+
+# fit logistic model
+
+output_Balti = 
+  fit_logistic %>% 
   broom::tidy() %>% 
   mutate(log_OR = estimate,
          OR = exp(estimate)) %>% 
   select(term, log_OR, OR, p.value)
+
+ci_Balti = exp(confint (fit_logistic)) %>% as.data.frame()
+### get the confidence interval for odds ratio
+rownames(ci_Balti) = NULL
+### get ride of row name
+cbind(output_Balti, ci_Balti) %>% 
+  select(-p.value) %>% 
+  filter(term == "victim_raceNon_White") %>% 
+  knitr::kable(digits = 3)
 ```
 
+According to the output, the odds ratio for solving homicides comparing non_white civtims to white victims is 0.453. We are 95% confident that the odds ratio for olving homicides comparing non_white civtims to white victims is somewhere between `r exp(-1.137)` and `r exp(-0.453)`
+
+
+### GLM for Each City
+
+```{r}
+head( homicide_data_modify)
+
+
+homicide_glm =
+  homicide_data_modify %>% 
+  group_by(city_state) %>% 
+  nest() %>% 
+  mutate(models = map(data, ~glm(solved ~ victim_age + victim_sex + victim_race, data = .x, family = binomial())), parameters = map(models, broom::tidy)) %>% 
+  select(-data) %>% 
+  mutate(ci = map(models, confint),
+         results = map2(parameters, ci, cbind)) %>% 
+  unnest(results) %>% 
+  filter(term == "victim_raceNon_White") %>% 
+  mutate(OR =exp(estimate)) %>% 
+  select(-std.error, -statistic, -p.value, -term, -estimate) 
+
+homicide_glm %>% 
+  knitr::kable(digits = 3)
+ 
+  
+         
+```
+# Problem 2
+
+### Data Input and Tidy
+
+```{r}
+birth_df = read_csv("./data/birthweight.csv") %>% 
+  janitor::clean_names() %>% 
+  mutate(babysex = as.factor(babysex),
+         frace = as.factor(frace),
+         malform = as.factor(malform),
+         mrace = as.factor(mrace))
+# change appropriate term from numeric to factor
+
+is.na(birth_df)
+# check for NA and there is no NA
+```
+
+### Model builting-Backward elimination
+
+```{r}
+library("leaps")
+mult.fit = lm(bwt ~., data = birth_df)
+summary(mult.fit)
+
+predict_reg = lm(bwt ~ babysex + bhead + blength + delwt + gaweeks + smoken, data = birth_df)
+summary(predict_reg)
+df1 = modelr::add_residuals(birth_df, predict_reg)
+df2 = modelr::add_predictions(birth_df, predict_reg)
+df = merge(df1, df2)
+
+df %>%
+  ggplot(aes(x = pred, y = resid)) + geom_point() + geom_hline(yintercept = 0, color = "red")
+```
+
+
+I start with full model. Based on the output, I only keep the coefficient with significant difference 0.01 which includes babysex2, bhead, blength, delwt, gaweeks, smoken for my predictive model. 
+
+```{r}
+fit1 = lm(bwt ~ blength + gaweeks, data = birth_df)
+summary(fit1)
+fit2 = lm(bwt ~ bhead*blength*babysex, data = birth_df)
+summary(fit2)
+```
+### Cross_Validation 
+
+```{r}
+cv_df = crossv_mc(birth_df, 100) %>% 
+  mutate(train = map(train, as.tibble),
+         test = map(test, as.tibble))
+### create column list for train and test
+
+cv_df =
+  cv_df %>% 
+  mutate(pred_mod = map(train, ~lm(bwt ~ babysex + bhead + blength + delwt + gaweeks + smoken, data = .x)),
+         fit1 = map(train, ~lm(bwt ~ blength + gaweeks, data = .x)),
+         fit2 = map(train, ~lm(bwt ~ bhead*blength*babysex, data = .x))) %>% 
+  mutate(rmse_pred = map2_dbl(pred_mod, test, ~ rmse(model = .x, data = .y)),
+         rmse_fit1 = map2_dbl(fit1, test, ~ rmse(model = .x, data = .y)),
+         rmse_fit2 = map2_dbl(fit2, test, ~ rmse(model = .x, data = .y)))
+### Map the three model to each list of train and use test to obtain rmse
+
+cv_df %>% 
+  select(starts_with("rmse")) %>% 
+  gather(key = model, value = 1:3) %>% 
+  mutate(model = as.factor(model),
+         model = fct_inorder(model)) %>%
+  rename(rmse = `1:3`) %>% 
+  ggplot(aes(x = model, y = rmse)) + geom_violin()
+### make plot of rmse for each model
+```
+
+Comment: The rmse plot suggests the predictive model is better than the fit1 (which is the main effects only model) and fit2 (which is three-way interaction) and model fit1 is better than model fit2.
