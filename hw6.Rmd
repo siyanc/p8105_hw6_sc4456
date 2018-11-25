@@ -4,7 +4,7 @@ author: "Siyan Chen"
 date: "11/20/2018"
 output: github_document
 editor_options: 
-  chunk_output_type: inline
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -13,9 +13,7 @@ library(httr)
 require(RCurl)
 library(modelr)
 set.seed(1)
-
 library(leaps)
-
 ```
 
 # Problem1
@@ -40,7 +38,6 @@ homicide_data_modify =
          victim_race = as.factor(victim_race),
          victim_race = fct_relevel(victim_race,"White"),
          victim_age = as.numeric(victim_age))
-
 head(homicide_data_modify)
 ```
 
@@ -78,9 +75,6 @@ According to the output, the odds ratio for solving homicides comparing non_whit
 ### GLM for Each City
 
 ```{r}
-head( homicide_data_modify)
-
-
 homicide_glm =
   homicide_data_modify %>% 
   group_by(city_state) %>% 
@@ -92,14 +86,25 @@ homicide_glm =
   unnest(results) %>% 
   filter(term == "victim_raceNon_White") %>% 
   mutate(OR =exp(estimate)) %>% 
-  select(-std.error, -statistic, -p.value, -term, -estimate) 
+  select(-std.error, -statistic, -p.value, -term, -estimate) %>% 
+  rename(confi_low  = `2.5 %`, confi_high = `97.5 %`) %>% 
+  mutate(confi_low = exp(confi_low), confi_high = exp(confi_high))
 
 homicide_glm %>% 
   knitr::kable(digits = 3)
- 
-  
-         
 ```
+
+### plot
+
+```{r}
+homicide_glm %>% 
+  mutate(city_state = fct_reorder(city_state, desc(OR))) %>% 
+  ggplot(aes(x = city_state, y = OR)) + 
+  geom_point() + 
+  geom_errorbar(aes(ymax = confi_high, ymin = confi_low)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
 # Problem 2
 
 ### Data Input and Tidy

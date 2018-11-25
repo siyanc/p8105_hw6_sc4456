@@ -26,7 +26,6 @@ homicide_data_modify =
          victim_race = as.factor(victim_race),
          victim_race = fct_relevel(victim_race,"White"),
          victim_age = as.numeric(victim_age))
-
 head(homicide_data_modify)
 ```
 
@@ -94,32 +93,6 @@ According to the output, the odds ratio for solving homicides comparing non\_whi
 ### GLM for Each City
 
 ``` r
-head( homicide_data_modify)
-```
-
-    ##          uid reported_date victim_last victim_first victim_race victim_age
-    ## 1 Alb-000001      20100504      GARCIA         JUAN   Non_White         79
-    ## 2 Alb-000002      20100216     MONTOYA      CAMERON   Non_White         12
-    ## 3 Alb-000003      20100601 SATTERFIELD      VIVIANA       White         10
-    ## 4 Alb-000004      20100101    MENDIOLA       CARLOS   Non_White         29
-    ## 5 Alb-000005      20100102        MULA       VIVIAN       White         73
-    ## 6 Alb-000006      20100126        BOOK    GERALDINE       White         94
-    ##   victim_sex        city state      lat       lon           disposition
-    ## 1       Male Albuquerque    NM 35.09579 -106.5386 Closed without arrest
-    ## 2       Male Albuquerque    NM 35.05681 -106.7153      Closed by arrest
-    ## 3     Female Albuquerque    NM 35.08609 -106.6956 Closed without arrest
-    ## 4       Male Albuquerque    NM 35.07849 -106.5561      Closed by arrest
-    ## 5     Female Albuquerque    NM 35.13036 -106.5810 Closed without arrest
-    ## 6     Female Albuquerque    NM 35.15111 -106.5378        Open/No arrest
-    ##       city_state solved
-    ## 1 Albuquerque_NM      0
-    ## 2 Albuquerque_NM      1
-    ## 3 Albuquerque_NM      0
-    ## 4 Albuquerque_NM      1
-    ## 5 Albuquerque_NM      0
-    ## 6 Albuquerque_NM      0
-
-``` r
 homicide_glm =
   homicide_data_modify %>% 
   group_by(city_state) %>% 
@@ -131,7 +104,9 @@ homicide_glm =
   unnest(results) %>% 
   filter(term == "victim_raceNon_White") %>% 
   mutate(OR =exp(estimate)) %>% 
-  select(-std.error, -statistic, -p.value, -term, -estimate) 
+  select(-std.error, -statistic, -p.value, -term, -estimate) %>% 
+  rename(confi_low  = `2.5 %`, confi_high = `97.5 %`) %>% 
+  mutate(confi_low = exp(confi_low), confi_high = exp(confi_high))
 ```
 
     ## Waiting for profiling to be done...
@@ -702,56 +677,71 @@ homicide_glm %>%
   knitr::kable(digits = 3)
 ```
 
-| city\_state        |   2.5 %|  97.5 %|     OR|
-|:-------------------|-------:|-------:|------:|
-| Albuquerque\_NM    |  -0.877|   0.117|  0.686|
-| Atlanta\_GA        |  -0.837|   0.278|  0.767|
-| Baltimore\_MD      |  -1.137|  -0.453|  0.453|
-| Baton Rouge\_LA    |  -1.207|   0.322|  0.656|
-| Birmingham\_AL     |  -0.479|   0.565|  1.047|
-| Boston\_MA         |  -3.107|  -1.302|  0.121|
-| Buffalo\_NY        |  -1.415|  -0.209|  0.447|
-| Charlotte\_NC      |  -1.147|  -0.072|  0.555|
-| Chicago\_IL        |  -0.817|  -0.286|  0.575|
-| Cincinnati\_OH     |  -1.685|  -0.591|  0.327|
-| Columbus\_OH       |  -0.420|   0.175|  0.884|
-| Denver\_CO         |  -1.045|  -0.002|  0.594|
-| Detroit\_MI        |  -0.702|  -0.126|  0.661|
-| Durham\_NC         |  -0.807|   1.048|  1.153|
-| Fort Worth\_TX     |  -0.574|   0.251|  0.853|
-| Fresno\_CA         |  -1.478|  -0.149|  0.457|
-| Houston\_TX        |  -0.303|   0.138|  0.921|
-| Indianapolis\_IN   |  -0.943|  -0.384|  0.516|
-| Jacksonville\_FL   |  -0.656|  -0.115|  0.681|
-| Las Vegas\_NV      |  -0.490|   0.012|  0.788|
-| Long Beach\_CA     |  -0.907|   0.532|  0.843|
-| Los Angeles\_CA    |  -0.648|  -0.020|  0.718|
-| Louisville\_KY     |  -1.251|  -0.431|  0.434|
-| Memphis\_TN        |  -0.623|   0.178|  0.807|
-| Miami\_FL          |  -0.970|  -0.129|  0.577|
-| Milwaukee\_wI      |  -0.876|   0.022|  0.660|
-| Minneapolis\_MN    |  -1.047|   0.222|  0.667|
-| Nashville\_TN      |  -0.435|   0.203|  0.892|
-| New Orleans\_LA    |  -1.122|  -0.221|  0.511|
-| New York\_NY       |  -1.275|   0.019|  0.548|
-| Oakland\_CA        |  -2.292|  -0.852|  0.217|
-| Oklahoma City\_OK  |  -0.688|   0.005|  0.711|
-| Omaha\_NE          |  -2.339|  -1.148|  0.180|
-| Philadelphia\_PA   |  -0.697|  -0.135|  0.662|
-| Pittsburgh\_PA     |  -1.819|  -0.697|  0.290|
-| Richmond\_VA       |  -1.821|   0.186|  0.488|
-| San Antonio\_TX    |  -0.764|   0.036|  0.698|
-| Sacramento\_CA     |  -0.817|   0.285|  0.774|
-| Savannah\_GA       |  -1.176|   0.271|  0.644|
-| San Bernardino\_CA |  -0.850|   0.758|  0.946|
-| San Diego\_CA      |  -1.333|  -0.358|  0.434|
-| San Francisco\_CA  |  -1.246|  -0.331|  0.458|
-| St. Louis\_MO      |  -0.861|  -0.162|  0.601|
-| Stockton\_CA       |  -1.586|  -0.292|  0.395|
-| Tampa\_FL          |  -0.493|   0.833|  1.185|
-| Tulsa\_OK          |  -0.915|  -0.163|  0.586|
-| Washington\_DC     |  -1.353|   0.020|  0.527|
-| \# Problem 2       |        |        |       |
+| city\_state        |  confi\_low|  confi\_high|     OR|
+|:-------------------|-----------:|------------:|------:|
+| Albuquerque\_NM    |       0.416|        1.124|  0.686|
+| Atlanta\_GA        |       0.433|        1.320|  0.767|
+| Baltimore\_MD      |       0.321|        0.636|  0.453|
+| Baton Rouge\_LA    |       0.299|        1.380|  0.656|
+| Birmingham\_AL     |       0.619|        1.759|  1.047|
+| Boston\_MA         |       0.045|        0.272|  0.121|
+| Buffalo\_NY        |       0.243|        0.811|  0.447|
+| Charlotte\_NC      |       0.318|        0.931|  0.555|
+| Chicago\_IL        |       0.442|        0.751|  0.575|
+| Cincinnati\_OH     |       0.186|        0.554|  0.327|
+| Columbus\_OH       |       0.657|        1.191|  0.884|
+| Denver\_CO         |       0.352|        0.998|  0.594|
+| Detroit\_MI        |       0.495|        0.881|  0.661|
+| Durham\_NC         |       0.446|        2.851|  1.153|
+| Fort Worth\_TX     |       0.563|        1.286|  0.853|
+| Fresno\_CA         |       0.228|        0.861|  0.457|
+| Houston\_TX        |       0.738|        1.148|  0.921|
+| Indianapolis\_IN   |       0.389|        0.681|  0.516|
+| Jacksonville\_FL   |       0.519|        0.891|  0.681|
+| Las Vegas\_NV      |       0.613|        1.012|  0.788|
+| Long Beach\_CA     |       0.404|        1.702|  0.843|
+| Los Angeles\_CA    |       0.523|        0.980|  0.718|
+| Louisville\_KY     |       0.286|        0.650|  0.434|
+| Memphis\_TN        |       0.536|        1.194|  0.807|
+| Miami\_FL          |       0.379|        0.879|  0.577|
+| Milwaukee\_wI      |       0.417|        1.022|  0.660|
+| Minneapolis\_MN    |       0.351|        1.248|  0.667|
+| Nashville\_TN      |       0.647|        1.225|  0.892|
+| New Orleans\_LA    |       0.325|        0.801|  0.511|
+| New York\_NY       |       0.279|        1.019|  0.548|
+| Oakland\_CA        |       0.101|        0.427|  0.217|
+| Oklahoma City\_OK  |       0.503|        1.005|  0.711|
+| Omaha\_NE          |       0.096|        0.317|  0.180|
+| Philadelphia\_PA   |       0.498|        0.873|  0.662|
+| Pittsburgh\_PA     |       0.162|        0.498|  0.290|
+| Richmond\_VA       |       0.162|        1.204|  0.488|
+| San Antonio\_TX    |       0.466|        1.036|  0.698|
+| Sacramento\_CA     |       0.442|        1.330|  0.774|
+| Savannah\_GA       |       0.308|        1.311|  0.644|
+| San Bernardino\_CA |       0.427|        2.134|  0.946|
+| San Diego\_CA      |       0.264|        0.699|  0.434|
+| San Francisco\_CA  |       0.288|        0.718|  0.458|
+| St. Louis\_MO      |       0.423|        0.850|  0.601|
+| Stockton\_CA       |       0.205|        0.747|  0.395|
+| Tampa\_FL          |       0.611|        2.299|  1.185|
+| Tulsa\_OK          |       0.400|        0.850|  0.586|
+| Washington\_DC     |       0.258|        1.020|  0.527|
+
+### plot
+
+``` r
+homicide_glm %>% 
+  mutate(city_state = fct_reorder(city_state, desc(OR))) %>% 
+  ggplot(aes(x = city_state, y = OR)) + 
+  geom_point() + 
+  geom_errorbar(aes(ymax = confi_high, ymin = confi_low)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+![](hw6_files/figure-markdown_github/unnamed-chunk-5-1.png)
+
+Problem 2
+=========
 
 ### Data Input and Tidy
 
@@ -13903,7 +13893,7 @@ df %>%
   ggplot(aes(x = pred, y = resid)) + geom_point() + geom_hline(yintercept = 0, color = "red")
 ```
 
-![](hw6_files/figure-markdown_github/unnamed-chunk-6-1.png)
+![](hw6_files/figure-markdown_github/unnamed-chunk-7-1.png)
 
 I start with full model. Based on the output, I only keep the coefficient with significant difference 0.01 which includes babysex2, bhead, blength, delwt, gaweeks, smoken for my predictive model.
 
@@ -13989,7 +13979,7 @@ cv_df %>%
   ggplot(aes(x = model, y = rmse)) + geom_violin()
 ```
 
-![](hw6_files/figure-markdown_github/unnamed-chunk-8-1.png)
+![](hw6_files/figure-markdown_github/unnamed-chunk-9-1.png)
 
 ``` r
 ### make plot of rmse for each model
