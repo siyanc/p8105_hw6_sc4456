@@ -43,7 +43,7 @@ head(homicide_data_modify)
 
 ### Regression Model
 
-```{r}
+```{r, message=FALSE}
 Balti_df = homicide_data_modify %>% 
   filter(city_state == "Baltimore_MD") 
 
@@ -69,7 +69,7 @@ cbind(output_Balti, ci_Balti) %>%
   knitr::kable(digits = 3)
 ```
 
-According to the output, the odds ratio for solving homicides comparing non_white civtims to white victims is 0.453. We are 95% confident that the odds ratio for olving homicides comparing non_white civtims to white victims is somewhere between `r exp(-1.137)` and `r exp(-0.453)`
+According to the output, the odds ratio for solving homicides comparing non_white civtims to white victims is 0.453. We are 95% confident that the odds ratio for olving homicides comparing non_white civtims to white victims is somewhere between 0.321 and 0.636
 
 
 ### GLM for Each City
@@ -105,6 +105,8 @@ homicide_glm %>%
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
+Comment: Tampa_FL has the highest odds ratio for solving homicides comparing non-white victim to white victims while Boston_MA has the lowest odds ratio. Durham_NC has odds ratio with greatest CI range. 
+
 # Problem 2
 
 ### Data Input and Tidy
@@ -138,7 +140,6 @@ df = merge(df1, df2)
 df %>%
   ggplot(aes(x = pred, y = resid)) + geom_point() + geom_hline(yintercept = 0, color = "red")
 ```
-
 
 I start with full model. Based on the output, I only keep the coefficient with significant difference 0.01 which includes babysex2, bhead, blength, delwt, gaweeks, smoken for my predictive model. 
 

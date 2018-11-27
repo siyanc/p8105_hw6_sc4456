@@ -70,11 +70,6 @@ output_Balti =
   select(term, log_OR, OR, p.value)
 
 ci_Balti = exp(confint (fit_logistic)) %>% as.data.frame()
-```
-
-    ## Waiting for profiling to be done...
-
-``` r
 ### get the confidence interval for odds ratio
 rownames(ci_Balti) = NULL
 ### get ride of row name
@@ -88,7 +83,7 @@ cbind(output_Balti, ci_Balti) %>%
 |:-----------------------|--------:|------:|------:|-------:|
 | victim\_raceNon\_White |   -0.793|  0.453|  0.321|   0.636|
 
-According to the output, the odds ratio for solving homicides comparing non\_white civtims to white victims is 0.453. We are 95% confident that the odds ratio for olving homicides comparing non\_white civtims to white victims is somewhere between 0.3207799 and 0.6357181
+According to the output, the odds ratio for solving homicides comparing non\_white civtims to white victims is 0.453. We are 95% confident that the odds ratio for olving homicides comparing non\_white civtims to white victims is somewhere between 0.321 and 0.636
 
 ### GLM for Each City
 
@@ -174,6 +169,8 @@ homicide_glm %>%
 ```
 
 ![](hw6_files/figure-markdown_github/unnamed-chunk-5-1.png)
+
+Comment: Tampa\_FL has the highest odds ratio for solving homicides comparing non-white victim to white victims while Boston\_MA has the lowest odds ratio. Durham\_NC has odds ratio with greatest CI range.
 
 Problem 2
 =========
