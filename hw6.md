@@ -206,86 +206,208 @@ is.na(birth_df)
 ### Model builting
 
 ``` r
-library("leaps")
 mult.fit = lm(bwt ~., data = birth_df)
-summary(mult.fit)
+pred_reg = step(mult.fit, direction = 'both')
 ```
 
+    ## Start:  AIC=48717.83
+    ## bwt ~ babysex + bhead + blength + delwt + fincome + frace + gaweeks + 
+    ##     malform + menarche + mheight + momage + mrace + parity + 
+    ##     pnumlbw + pnumsga + ppbmi + ppwt + smoken + wtgain
     ## 
-    ## Call:
-    ## lm(formula = bwt ~ ., data = birth_df)
     ## 
-    ## Residuals:
-    ##      Min       1Q   Median       3Q      Max 
-    ## -1097.68  -184.86    -3.33   173.09  2344.15 
+    ## Step:  AIC=48717.83
+    ## bwt ~ babysex + bhead + blength + delwt + fincome + frace + gaweeks + 
+    ##     malform + menarche + mheight + momage + mrace + parity + 
+    ##     pnumlbw + pnumsga + ppbmi + ppwt + smoken
     ## 
-    ## Coefficients: (3 not defined because of singularities)
-    ##               Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept) -6265.3914   660.4011  -9.487  < 2e-16 ***
-    ## babysex2       28.7073     8.4652   3.391 0.000702 ***
-    ## bhead         130.7781     3.4523  37.881  < 2e-16 ***
-    ## blength        74.9536     2.0217  37.075  < 2e-16 ***
-    ## delwt           4.1007     0.3948  10.386  < 2e-16 ***
-    ## fincome         0.2898     0.1795   1.614 0.106551    
-    ## frace2         14.3313    46.1501   0.311 0.756168    
-    ## frace3         21.2361    69.2960   0.306 0.759273    
-    ## frace4        -46.9962    44.6782  -1.052 0.292912    
-    ## frace8          4.2969    74.0741   0.058 0.953745    
-    ## gaweeks        11.5494     1.4654   7.882 4.06e-15 ***
-    ## malform1        9.7650    70.6259   0.138 0.890039    
-    ## menarche       -3.5508     2.8951  -1.226 0.220083    
-    ## mheight         9.7874    10.3116   0.949 0.342588    
-    ## momage          0.7593     1.2221   0.621 0.534418    
-    ## mrace2       -151.4354    46.0453  -3.289 0.001014 ** 
-    ## mrace3        -91.3866    71.9190  -1.271 0.203908    
-    ## mrace4        -56.4787    45.1369  -1.251 0.210901    
-    ## parity         95.5411    40.4793   2.360 0.018307 *  
-    ## pnumlbw             NA         NA      NA       NA    
-    ## pnumsga             NA         NA      NA       NA    
-    ## ppbmi           4.3538    14.8913   0.292 0.770017    
-    ## ppwt           -3.4716     2.6121  -1.329 0.183913    
-    ## smoken         -4.8544     0.5871  -8.269  < 2e-16 ***
-    ## wtgain              NA         NA      NA       NA    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
-    ## Residual standard error: 272.5 on 4320 degrees of freedom
-    ## Multiple R-squared:  0.7183, Adjusted R-squared:  0.717 
-    ## F-statistic: 524.6 on 21 and 4320 DF,  p-value: < 2.2e-16
+    ## Step:  AIC=48717.83
+    ## bwt ~ babysex + bhead + blength + delwt + fincome + frace + gaweeks + 
+    ##     malform + menarche + mheight + momage + mrace + parity + 
+    ##     pnumlbw + ppbmi + ppwt + smoken
+    ## 
+    ## 
+    ## Step:  AIC=48717.83
+    ## bwt ~ babysex + bhead + blength + delwt + fincome + frace + gaweeks + 
+    ##     malform + menarche + mheight + momage + mrace + parity + 
+    ##     ppbmi + ppwt + smoken
+    ## 
+    ##            Df Sum of Sq       RSS   AIC
+    ## - frace     4    124365 320848704 48712
+    ## - malform   1      1419 320725757 48716
+    ## - ppbmi     1      6346 320730684 48716
+    ## - momage    1     28661 320752999 48716
+    ## - mheight   1     66886 320791224 48717
+    ## - menarche  1    111679 320836018 48717
+    ## - ppwt      1    131132 320855470 48718
+    ## <none>                  320724338 48718
+    ## - fincome   1    193454 320917792 48718
+    ## - parity    1    413584 321137922 48721
+    ## - mrace     3    868321 321592659 48724
+    ## - babysex   1    853796 321578134 48727
+    ## - gaweeks   1   4611823 325336161 48778
+    ## - smoken    1   5076393 325800732 48784
+    ## - delwt     1   8008891 328733230 48823
+    ## - blength   1 102050296 422774634 49915
+    ## - bhead     1 106535716 427260054 49961
+    ## 
+    ## Step:  AIC=48711.51
+    ## bwt ~ babysex + bhead + blength + delwt + fincome + gaweeks + 
+    ##     malform + menarche + mheight + momage + mrace + parity + 
+    ##     ppbmi + ppwt + smoken
+    ## 
+    ##            Df Sum of Sq       RSS   AIC
+    ## - malform   1      1447 320850151 48710
+    ## - ppbmi     1      6975 320855679 48710
+    ## - momage    1     28379 320877083 48710
+    ## - mheight   1     69502 320918206 48710
+    ## - menarche  1    115708 320964411 48711
+    ## - ppwt      1    133961 320982665 48711
+    ## <none>                  320848704 48712
+    ## - fincome   1    194405 321043108 48712
+    ## - parity    1    414687 321263390 48715
+    ## + frace     4    124365 320724338 48718
+    ## - babysex   1    852133 321700837 48721
+    ## - gaweeks   1   4625208 325473911 48772
+    ## - smoken    1   5036389 325885093 48777
+    ## - delwt     1   8013099 328861802 48817
+    ## - mrace     3  13540415 334389119 48885
+    ## - blength   1 101995688 422844392 49908
+    ## - bhead     1 106662962 427511666 49956
+    ## 
+    ## Step:  AIC=48709.53
+    ## bwt ~ babysex + bhead + blength + delwt + fincome + gaweeks + 
+    ##     menarche + mheight + momage + mrace + parity + ppbmi + ppwt + 
+    ##     smoken
+    ## 
+    ##            Df Sum of Sq       RSS   AIC
+    ## - ppbmi     1      6928 320857079 48708
+    ## - momage    1     28660 320878811 48708
+    ## - mheight   1     69320 320919470 48708
+    ## - menarche  1    116027 320966177 48709
+    ## - ppwt      1    133894 320984044 48709
+    ## <none>                  320850151 48710
+    ## - fincome   1    193784 321043934 48710
+    ## + malform   1      1447 320848704 48712
+    ## - parity    1    414482 321264633 48713
+    ## + frace     4    124393 320725757 48716
+    ## - babysex   1    851279 321701430 48719
+    ## - gaweeks   1   4624003 325474154 48770
+    ## - smoken    1   5035195 325885346 48775
+    ## - delwt     1   8029079 328879230 48815
+    ## - mrace     3  13553320 334403471 48883
+    ## - blength   1 102009225 422859375 49906
+    ## - bhead     1 106675331 427525481 49954
+    ## 
+    ## Step:  AIC=48707.63
+    ## bwt ~ babysex + bhead + blength + delwt + fincome + gaweeks + 
+    ##     menarche + mheight + momage + mrace + parity + ppwt + smoken
+    ## 
+    ##            Df Sum of Sq       RSS   AIC
+    ## - momage    1     29211 320886290 48706
+    ## - menarche  1    117635 320974714 48707
+    ## <none>                  320857079 48708
+    ## - fincome   1    195199 321052278 48708
+    ## + ppbmi     1      6928 320850151 48710
+    ## + malform   1      1400 320855679 48710
+    ## - parity    1    412984 321270064 48711
+    ## + frace     4    125020 320732060 48714
+    ## - babysex   1    850020 321707099 48717
+    ## - mheight   1   1078673 321935752 48720
+    ## - ppwt      1   2934023 323791103 48745
+    ## - gaweeks   1   4621504 325478583 48768
+    ## - smoken    1   5039368 325896447 48773
+    ## - delwt     1   8024939 328882018 48813
+    ## - mrace     3  13551444 334408523 48881
+    ## - blength   1 102018559 422875638 49904
+    ## - bhead     1 106821342 427678421 49953
+    ## 
+    ## Step:  AIC=48706.02
+    ## bwt ~ babysex + bhead + blength + delwt + fincome + gaweeks + 
+    ##     menarche + mheight + mrace + parity + ppwt + smoken
+    ## 
+    ##            Df Sum of Sq       RSS   AIC
+    ## - menarche  1    100121 320986412 48705
+    ## <none>                  320886290 48706
+    ## - fincome   1    240800 321127090 48707
+    ## + momage    1     29211 320857079 48708
+    ## + ppbmi     1      7479 320878811 48708
+    ## + malform   1      1678 320884612 48708
+    ## - parity    1    431433 321317724 48710
+    ## + frace     4    124743 320761547 48712
+    ## - babysex   1    841278 321727568 48715
+    ## - mheight   1   1076739 321963029 48719
+    ## - ppwt      1   2913653 323799943 48743
+    ## - gaweeks   1   4676469 325562760 48767
+    ## - smoken    1   5045104 325931394 48772
+    ## - delwt     1   8000672 328886962 48811
+    ## - mrace     3  14667730 335554021 48894
+    ## - blength   1 101990556 422876847 49902
+    ## - bhead     1 106864308 427750598 49952
+    ## 
+    ## Step:  AIC=48705.38
+    ## bwt ~ babysex + bhead + blength + delwt + fincome + gaweeks + 
+    ##     mheight + mrace + parity + ppwt + smoken
+    ## 
+    ##            Df Sum of Sq       RSS   AIC
+    ## <none>                  320986412 48705
+    ## + menarche  1    100121 320886290 48706
+    ## - fincome   1    245637 321232048 48707
+    ## + momage    1     11698 320974714 48707
+    ## + ppbmi     1      8823 320977589 48707
+    ## + malform   1      1884 320984528 48707
+    ## - parity    1    422770 321409181 48709
+    ## + frace     4    128726 320857686 48712
+    ## - babysex   1    846134 321832545 48715
+    ## - mheight   1   1012240 321998651 48717
+    ## - ppwt      1   2907049 323893461 48743
+    ## - gaweeks   1   4662501 325648912 48766
+    ## - smoken    1   5073849 326060260 48771
+    ## - delwt     1   8137459 329123871 48812
+    ## - mrace     3  14683609 335670021 48894
+    ## - blength   1 102191779 423178191 49903
+    ## - bhead     1 106779754 427766166 49950
 
 ``` r
-predict_reg = lm(bwt ~ babysex + bhead + blength + delwt + gaweeks + smoken, data = birth_df)
-summary(predict_reg)
+summary(pred_reg)
 ```
 
     ## 
     ## Call:
-    ## lm(formula = bwt ~ babysex + bhead + blength + delwt + gaweeks + 
-    ##     smoken, data = birth_df)
+    ## lm(formula = bwt ~ babysex + bhead + blength + delwt + fincome + 
+    ##     gaweeks + mheight + mrace + parity + ppwt + smoken, data = birth_df)
     ## 
     ## Residuals:
     ##      Min       1Q   Median       3Q      Max 
-    ## -1181.20  -183.63    -9.49   174.43  2506.57 
+    ## -1097.18  -185.52    -3.39   174.14  2353.44 
     ## 
     ## Coefficients:
     ##               Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept) -6285.7402    97.0521 -64.767  < 2e-16 ***
-    ## babysex2       30.3364     8.7343   3.473 0.000519 ***
-    ## bhead         137.1933     3.5353  38.806  < 2e-16 ***
-    ## blength        78.8032     2.0720  38.033  < 2e-16 ***
-    ## delwt           2.0766     0.1994  10.416  < 2e-16 ***
-    ## gaweeks        14.0748     1.4976   9.398  < 2e-16 ***
-    ## smoken         -2.1711     0.5823  -3.729 0.000195 ***
+    ## (Intercept) -6098.8219   137.5463 -44.340  < 2e-16 ***
+    ## babysex2       28.5580     8.4549   3.378 0.000737 ***
+    ## bhead         130.7770     3.4466  37.944  < 2e-16 ***
+    ## blength        74.9471     2.0190  37.120  < 2e-16 ***
+    ## delwt           4.1067     0.3921  10.475  < 2e-16 ***
+    ## fincome         0.3180     0.1747   1.820 0.068844 .  
+    ## gaweeks        11.5925     1.4621   7.929 2.79e-15 ***
+    ## mheight         6.5940     1.7849   3.694 0.000223 ***
+    ## mrace2       -138.7925     9.9071 -14.009  < 2e-16 ***
+    ## mrace3        -74.8868    42.3146  -1.770 0.076837 .  
+    ## mrace4       -100.6781    19.3247  -5.210 1.98e-07 ***
+    ## parity         96.3047    40.3362   2.388 0.017004 *  
+    ## ppwt           -2.6756     0.4274  -6.261 4.20e-10 ***
+    ## smoken         -4.8434     0.5856  -8.271  < 2e-16 ***
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
-    ## Residual standard error: 282 on 4335 degrees of freedom
-    ## Multiple R-squared:  0.6973, Adjusted R-squared:  0.6969 
-    ## F-statistic:  1665 on 6 and 4335 DF,  p-value: < 2.2e-16
+    ## Residual standard error: 272.3 on 4328 degrees of freedom
+    ## Multiple R-squared:  0.7181, Adjusted R-squared:  0.7173 
+    ## F-statistic: 848.1 on 13 and 4328 DF,  p-value: < 2.2e-16
 
 ``` r
-df1 = modelr::add_residuals(birth_df, predict_reg)
-df2 = modelr::add_predictions(birth_df, predict_reg)
+df1 = modelr::add_residuals(birth_df, pred_reg)
+df2 = modelr::add_predictions(birth_df, pred_reg)
 df = merge(df1, df2)
 
 df %>%
@@ -294,7 +416,7 @@ df %>%
 
 ![](hw6_files/figure-markdown_github/unnamed-chunk-7-1.png)
 
-I start with full model. Based on the output, I only keep the coefficient with significant difference 0.01 which includes babysex2, bhead, blength, delwt, gaweeks, smoken for my predictive model.
+I start with full model and use stepwise selection to get my predict model to be: lm(formula = bwt ~ babysex + bhead + blength + delwt + fincome + gaweeks + mheight + mrace + parity + ppwt + smoken, data = birth\_df)
 
 ``` r
 fit1 = lm(bwt ~ blength + gaweeks, data = birth_df)
@@ -361,12 +483,21 @@ cv_df = crossv_mc(birth_df, 100) %>%
 
 cv_df =
   cv_df %>% 
-  mutate(pred_mod = map(train, ~lm(bwt ~ babysex + bhead + blength + delwt + gaweeks + smoken, data = .x)),
+  mutate(pred_reg = map(train, ~lm(formula = bwt ~ babysex + bhead + blength + delwt + fincome + gaweeks + mheight + mrace + parity + ppwt + smoken, data = .x)), 
          fit1 = map(train, ~lm(bwt ~ blength + gaweeks, data = .x)),
-         fit2 = map(train, ~lm(bwt ~ bhead*blength*babysex, data = .x))) %>% 
-  mutate(rmse_pred = map2_dbl(pred_mod, test, ~ rmse(model = .x, data = .y)),
+         fit2 = map(train, ~lm(bwt ~ bhead*blength*babysex, data = .x)))%>% 
+  mutate(rmse_pred = map2_dbl(pred_reg, test, ~ rmse(model = .x, data = .y)),
          rmse_fit1 = map2_dbl(fit1, test, ~ rmse(model = .x, data = .y)),
          rmse_fit2 = map2_dbl(fit2, test, ~ rmse(model = .x, data = .y)))
+```
+
+    ## Warning in predict.lm(model, data): prediction from a rank-deficient fit
+    ## may be misleading
+
+    ## Warning in predict.lm(model, data): prediction from a rank-deficient fit
+    ## may be misleading
+
+``` r
 ### Map the three model to each list of train and use test to obtain rmse
 
 cv_df %>% 

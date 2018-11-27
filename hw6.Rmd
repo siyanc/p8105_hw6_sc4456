@@ -127,21 +127,21 @@ is.na(birth_df)
 ### Model builting
 
 ```{r}
-library("leaps")
 mult.fit = lm(bwt ~., data = birth_df)
-summary(mult.fit)
+pred_reg = step(mult.fit, direction = 'both')
+summary(pred_reg)
 
-predict_reg = lm(bwt ~ babysex + bhead + blength + delwt + gaweeks + smoken, data = birth_df)
-summary(predict_reg)
-df1 = modelr::add_residuals(birth_df, predict_reg)
-df2 = modelr::add_predictions(birth_df, predict_reg)
+df1 = modelr::add_residuals(birth_df, pred_reg)
+df2 = modelr::add_predictions(birth_df, pred_reg)
 df = merge(df1, df2)
 
 df %>%
   ggplot(aes(x = pred, y = resid)) + geom_point() + geom_hline(yintercept = 0, color = "red")
 ```
 
-I start with full model. Based on the output, I only keep the coefficient with significant difference 0.01 which includes babysex2, bhead, blength, delwt, gaweeks, smoken for my predictive model. 
+I start with full model and use stepwise selection to get my predict model to be: lm(formula = bwt ~ babysex + bhead + blength + delwt + fincome + 
+    gaweeks + mheight + mrace + parity + ppwt + smoken, data = birth_df)
+
 
 ```{r}
 fit1 = lm(bwt ~ blength + gaweeks, data = birth_df)
@@ -149,6 +149,7 @@ summary(fit1)
 fit2 = lm(bwt ~ bhead*blength*babysex, data = birth_df)
 summary(fit2)
 ```
+
 ### Cross_Validation 
 
 ```{r}
@@ -159,10 +160,10 @@ cv_df = crossv_mc(birth_df, 100) %>%
 
 cv_df =
   cv_df %>% 
-  mutate(pred_mod = map(train, ~lm(bwt ~ babysex + bhead + blength + delwt + gaweeks + smoken, data = .x)),
+  mutate(pred_reg = map(train, ~lm(formula = bwt ~ babysex + bhead + blength + delwt + fincome + gaweeks + mheight + mrace + parity + ppwt + smoken, data = .x)), 
          fit1 = map(train, ~lm(bwt ~ blength + gaweeks, data = .x)),
-         fit2 = map(train, ~lm(bwt ~ bhead*blength*babysex, data = .x))) %>% 
-  mutate(rmse_pred = map2_dbl(pred_mod, test, ~ rmse(model = .x, data = .y)),
+         fit2 = map(train, ~lm(bwt ~ bhead*blength*babysex, data = .x)))%>% 
+  mutate(rmse_pred = map2_dbl(pred_reg, test, ~ rmse(model = .x, data = .y)),
          rmse_fit1 = map2_dbl(fit1, test, ~ rmse(model = .x, data = .y)),
          rmse_fit2 = map2_dbl(fit2, test, ~ rmse(model = .x, data = .y)))
 ### Map the three model to each list of train and use test to obtain rmse
